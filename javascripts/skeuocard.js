@@ -40,6 +40,7 @@
       this.visibleFace = 'front';
       optDefaults = {
         debug: false,
+        dontFocus: false,
         acceptedCardProducts: null,
         cardNumberPlaceholderChar: 'X',
         genericPlaceholder: "XXXX XXXX XXXX XXXX",
@@ -405,7 +406,8 @@
         this.el.container.addClass("issuer-" + product.attrs.issuerShortname);
       }
       this._setUnderlyingValue('type', (product != null ? product.attrs.companyShortname : void 0) || null);
-      this._inputViews.number.setGroupings((product != null ? product.attrs.cardNumberGrouping : void 0) || [this.options.genericPlaceholder.length]);
+      this._inputViews.number.setGroupings((product != null ? product.attrs.cardNumberGrouping : void 0) || [this.options.genericPlaceholder.length], this.options.dontFocus);
+      delete this.options.dontFocus;
       if (product != null) {
         this._inputViews.exp.reconfigure({
           pattern: (product != null ? product.attrs.expirationFormat : void 0) || "MM/YY"
@@ -504,7 +506,13 @@
     };
 
     Skeuocard.prototype.isValid = function() {
-      return !this.el.front.hasClass('invalid') && !this.el.back.hasClass('invalid');
+      if (this.product.faces === 'both') {
+        return !this.el.front.hasClass('invalid') && !this.el.back.hasClass('invalid');
+      } else if (this.product.faces === 'front') {
+        return !this.el.front.hasClass('invalid');
+      } else {
+        return !this.el.back.hasClass('invalid');
+      }
     };
 
     return Skeuocard;
@@ -827,7 +835,7 @@
       return offset + field[0].selectionEnd;
     };
 
-    SegmentedCardNumberInputView.prototype.setGroupings = function(groupings) {
+    SegmentedCardNumberInputView.prototype.setGroupings = function(groupings, dontFocus) {
       var groupEl, groupLength, _caretPosition, _currentField, _i, _len, _value;
       _currentField = this._getFocusedField();
       _value = this.getValue();
@@ -850,21 +858,25 @@
       }
       this.options.groupings = groupings;
       this.setValue(_value);
-      _currentField = this._focusFieldForValue([_caretPosition, _caretPosition]);
+      _currentField = this._focusFieldForValue([_caretPosition, _caretPosition], dontFocus);
       if ((_currentField != null) && _currentField[0].selectionEnd === _currentField[0].maxLength) {
         return this._focusField(_currentField.next(), 'start');
       }
     };
 
-    SegmentedCardNumberInputView.prototype._focusFieldForValue = function(place) {
+    SegmentedCardNumberInputView.prototype._focusFieldForValue = function(place, dontFocus) {
       var field, fieldOffset, fieldPosition, groupIndex, groupLength, value, _i, _lastStartPos, _len, _ref;
       value = this.getValue();
       if (place === 'start') {
         field = this.el.find('input').first();
-        this._focusField(field, place);
+        if (!dontFocus) {
+          this._focusField(field, place);
+        }
       } else if (place === 'end') {
         field = this.el.find('input').last();
-        this._focusField(field, place);
+        if (!dontFocus) {
+          this._focusField(field, place);
+        }
       } else {
         field = null;
         fieldOffset = null;
@@ -879,9 +891,13 @@
           _lastStartPos += groupLength;
         }
         if ((field != null) && (fieldPosition != null)) {
-          this._focusField(field, [fieldPosition, fieldPosition]);
+          if (!dontFocus) {
+            this._focusField(field, [fieldPosition, fieldPosition]);
+          }
         } else {
-          this._focusField(this.el.find('input'), 'end');
+          if (!dontFocus) {
+            this._focusField(this.el.find('input'), 'end');
+          }
         }
       }
       return field;
@@ -1372,6 +1388,14 @@
         isFilled: this._isCardCVCFilled.bind(this),
         isValid: this._isCardCVCValid.bind(this)
       };
+      var faces = { front: 0, back: 0 }
+      for (k in attrs.layout) { faces[attrs.layout[k]] += 1; }
+      if (faces.front > 0 && faces.back > 0) {
+        this.faces = 'both';
+      } else {
+        this.faces = faces.front > 0 ? 'front' : 'back';
+      }
+
     }
 
     CardProduct.prototype.createVariation = function(attrs) {
