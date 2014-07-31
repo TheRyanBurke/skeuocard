@@ -508,7 +508,7 @@
     Skeuocard.prototype.isValid = function() {
       if (this.product && this.product.faces === 'both') {
         return !this.el.front.hasClass('invalid') && !this.el.back.hasClass('invalid');
-      } else if (tthis.product && his.product.faces === 'front') {
+      } else if (this.product && this.product.faces === 'front') {
         return !this.el.front.hasClass('invalid');
       } else {
         return !this.el.back.hasClass('invalid');
