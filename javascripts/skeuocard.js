@@ -1693,19 +1693,19 @@
     }
   });
 
-  visaProduct = Skeuocard.prototype.CardProduct.firstMatchingShortname('visa');
+//   visaProduct = Skeuocard.prototype.CardProduct.firstMatchingShortname('visa');
 
-  visaProduct.createVariation({
-    pattern: /^414720/,
-    issuingAuthority: "Chase",
-    issuerName: "Chase Sapphire Card",
-    issuerShortname: "chase-sapphire",
-    layout: {
-      name: 'front',
-      number: 'front',
-      exp: 'front',
-      cvc: 'front'
-    }
-  });
+//   visaProduct.createVariation({
+//     pattern: /^414720/,
+//     issuingAuthority: "Chase",
+//     issuerName: "Chase Sapphire Card",
+//     issuerShortname: "chase-sapphire",
+//     layout: {
+//       name: 'front',
+//       number: 'front',
+//       exp: 'front',
+//       cvc: 'front'
+//     }
+//   });
 
 }).call(this);
